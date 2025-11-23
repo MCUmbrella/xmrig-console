@@ -1,0 +1,43 @@
+misc/
+
+# Node modules (if any node tooling is added)
+node_modules/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Byte-compiled / optimized / DLL files
+*.so
+
+# Distribution / build folders
+dist/
+build/
+coverage/
+.cache/
+
+# Logs
+*.log
+
+# Environment files
+.env
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Vim
+*.swp
+
+# Misc
+*.tmp

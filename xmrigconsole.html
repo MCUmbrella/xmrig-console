@@ -2,9 +2,8 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8" />
+	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<!-- <link rel="stylesheet" href="newstyle.css" /> -->
 	<title>XMRig Control Panel</title>
 	<style>
 		* {
@@ -22,6 +21,7 @@
 
 		#app {
 			padding: 8px;
+			margin: 0px auto;
 			max-width: 640px;
 			min-height: 480px;
 			box-shadow: inset 0 0 1px 1px black;
@@ -104,7 +104,7 @@
 			gap: 6px;
 		}
 
-		#indicators-container> :nth-last-child(2) {
+		#indicators-container> :nth-last-child(3) {
 			margin-right: auto;
 		}
 
@@ -216,9 +216,9 @@
 	<div id="app">
 		<div id="auth-container">
 			<label for="apiUrl">API ROOT</label>
-			<input id="apiUrl" type="url" placeholder="API URL" />
+			<input id="apiUrl" type="url" placeholder="http://127.0.0.1:12345">
 			<label for="token">TOKEN</label>
-			<input id="token" type="password" placeholder="Access token" />
+			<input id="token" type="password" placeholder="Password123">
 		</div>
 
 		<div id="refresh-slider-container">
@@ -236,11 +236,11 @@
 		</div>
 
 		<div id="controls-container">
-			<button onclick="pause()">Pause</button>
-			<button onclick="resume()">Resume</button>
-			<button onclick="stop()">Stop</button>
-			<button onclick="tick()">Tick</button>
-			<button onclick="reset()">Reset</button>
+			<button onclick="pause()" title="Pause the miner">Pause</button>
+			<button onclick="resume()" title="Resume the miner">Resume</button>
+			<button onclick="stop()" title="Stop the miner">Stop</button>
+			<button onclick="tick()" title="Refresh once">Tick</button>
+			<button onclick="reset()" title="Reset control panel">Reset</button>
 		</div>
 		<div id="indicators-container">
 			<span id="pool-connection-indicator" class="indicator indicator-green"
@@ -259,12 +259,10 @@
 				title="Indicates whether OpenCL is enabled">CL</span>
 			<span id="cuda-indicator" class="indicator indicator-green"
 				title="Indicates whether CUDA is enabled">CU</span>
-			<div>
-				<span id="pause-indicator" class="indicator indicator-yellow"
-					title="Indicates whether the miner is paused">PAUSE</span>
-				<span id="error-indicator" class="indicator indicator-red"
-					title="Indicates error (either on local or remote)">ERROR</span>
-			</div>
+			<span id="pause-indicator" class="indicator indicator-yellow"
+				title="Indicates whether the miner is paused">PAUSE</span>
+			<span id="error-indicator" class="indicator indicator-red"
+				title="Indicates error (either on local or remote)">ERROR</span>
 		</div>
 
 		<table class="response-table" border="1">
@@ -660,6 +658,8 @@
 				clearInterval(pollIntervalId);
 				pollIntervalId = null;
 			}
+
+			// TODO: cancel ongoing network requests if possible
 
 			// Clear inputs
 			urlField.value = "";
