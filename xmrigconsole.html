@@ -405,6 +405,7 @@
 
 		let pollIntervalSec = 0; // 0 = OFF
 		let pollIntervalId = null;
+		let tickOngoing = false;
 
 		/**
 		 * Extracts uptime in seconds into an array of [days, hours, minutes, seconds].
@@ -625,8 +626,16 @@
 		/**
 		 * Fetches the summary and backends information and renders it to the UI.
 		 * If an error occurs, it logs the error and updates the error indicator.
+		 * Ticks may be skipped if a previous tick is still ongoing to prevent
+		 * overlapping requests.
 		 */
 		async function tick() {
+			if (tickOngoing) {
+				return;
+			}
+
+			tickOngoing = true;
+
 			try {
 				const summary = await getSummary();
 				const backends = await getBackends();
@@ -635,6 +644,9 @@
 			catch (err) {
 				console.error(err);
 				indError.className = "indicator indicator-red-active";
+			}
+			finally {
+				tickOngoing = false;
 			}
 		}
 
