@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- <link rel="stylesheet" href="newstyle.css" /> -->
+	<title>XMRig Control Panel</title>
+	<style>
+		* {
+			font-size: 16px;
+			font-family: monospace;
+			box-sizing: border-box;
+		}
+
+		body {
+			padding: 0px;
+			margin: 0px;
+			line-height: 1;
+			background-color: #c0c7c8;
+		}
+
+		#app {
+			padding: 8px;
+			max-width: 640px;
+			min-height: 480px;
+			box-shadow: inset 0 0 1px 1px black;
+		}
+
+		#auth-container {
+			width: 100%;
+			display: grid;
+			grid-template-columns: max-content 1fr;
+			gap: 6px 8px;
+			align-items: center;
+		}
+
+		#auth-container label {
+			font-weight: bold;
+			text-align: right;
+		}
+
+		#auth-container input[type="url"],
+		#auth-container input[type="password"] {
+			border: inset 2px black;
+			outline: inset 2px lightgray;
+		}
+
+		#refresh-slider-container {
+			width: 100%;
+		}
+
+		#refresh-slider {
+			width: 100%;
+		}
+
+		#refresh-slider-tickmarks {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			writing-mode: vertical-lr;
+			width: 100%;
+			overflow: visible;
+		}
+
+		#refresh-slider-tickmarks * {
+			text-align: center;
+			rotate: -90deg;
+			transform: translate(6px, 0px);
+		}
+
+		#controls-container {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 8px;
+			justify-content: center;
+			align-items: center;
+			margin-top: -8px;
+			margin-bottom: 6px;
+		}
+
+		#controls-container button {
+			background-color: #c0c7c8;
+			color: black;
+			border: outset 2px white;
+			outline: outset 2px darkgray;
+			padding-left: 2px;
+			padding-right: 2px;
+		}
+
+		#controls-container button:active {
+			outline-style: inset;
+			border-style: inset;
+			transform: translate(2px, 2px);
+		}
+
+		#controls-container button:disabled {
+			color: gray;
+		}
+
+		#indicators-container {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+		}
+
+		#indicators-container> :nth-last-child(2) {
+			margin-right: auto;
+		}
+
+		.indicator {
+			background-color: black;
+			font-weight: bold;
+			text-align: center;
+			padding-left: 4px;
+			padding-right: 4px;
+			padding-top: 2px;
+			padding-bottom: 2px;
+		}
+
+		@keyframes yellow-blink {
+			0% {
+				background-color: saddlebrown;
+				color: yellow;
+			}
+
+			50% {
+				background-color: black;
+				color: saddlebrown;
+			}
+		}
+
+		@keyframes red-blink {
+			0% {
+				background-color: maroon;
+				color: red;
+			}
+
+			50% {
+				background-color: black;
+				color: maroon;
+			}
+		}
+
+		.indicator-green {
+			color: darkolivegreen;
+		}
+
+		.indicator-green-active {
+			background-color: darkolivegreen;
+			color: lime;
+		}
+
+		.indicator-yellow {
+			color: saddlebrown;
+		}
+
+		.indicator-yellow-active {
+			background-color: saddlebrown;
+			color: yellow;
+			animation: yellow-blink 1s infinite;
+		}
+
+		.indicator-red {
+			color: maroon;
+		}
+
+		.indicator-red-active {
+			background-color: maroon;
+			color: red;
+			animation: red-blink 0.25s infinite;
+		}
+
+		.response-table {
+			width: 100%;
+			table-layout: auto;
+			border-collapse: collapse;
+			border: solid 1px black;
+			margin-top: 4px;
+		}
+
+		.response-table caption {
+			text-align: left;
+			font-weight: bold;
+		}
+
+		.response-table td {
+			padding-top: 4px;
+			padding-bottom: 4px;
+			width: fit-content;
+		}
+
+		.response-table td.identifier {
+			font-weight: bold;
+			width: 1px;
+			word-break: keep-all;
+		}
+
+		.response-table td:not(.identifier) * {
+			word-break: break-word;
+		}
+
+		.response-table .displays {
+			line-height: 1.5;
+			background-color: black;
+			color: white;
+			margin-left: 2px;
+			margin-right: 2px;
+			padding-left: 2px;
+			padding-right: 2px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="app">
+		<div id="auth-container">
+			<label for="apiUrl">API ROOT</label>
+			<input id="apiUrl" type="url" placeholder="API URL" />
+			<label for="token">TOKEN</label>
+			<input id="token" type="password" placeholder="Access token" />
+		</div>
+
+		<div id="refresh-slider-container">
+			<input type="range" id="refresh-slider" min="0" max="7" step="1" value="0" list="refresh-slider-tickmarks">
+			<datalist id="refresh-slider-tickmarks">
+				<option value="0" label="OFF"></option>
+				<option value="1" label="10"></option>
+				<option value="2" label="5"></option>
+				<option value="3" label="2"></option>
+				<option value="4" label="1"></option>
+				<option value="5" label="0.5"></option>
+				<option value="6" label="0.25"></option>
+				<option value="7" label="0.2"></option>
+			</datalist>
+		</div>
+
+		<div id="controls-container">
+			<button onclick="pause()">Pause</button>
+			<button onclick="resume()">Resume</button>
+			<button onclick="stop()">Stop</button>
+			<button onclick="tick()">Tick</button>
+			<button onclick="reset()">Reset</button>
+		</div>
+		<div id="indicators-container">
+			<span id="pool-connection-indicator" class="indicator indicator-green"
+				title="Indicates whether the miner is connected to the pool">CONN</span>
+			<span id="hw-aes-indicator" class="indicator indicator-green"
+				title="Indicates whether hardware AES is enabled">AES</span>
+			<span id="asm-indicator" class="indicator indicator-green"
+				title="Indicates whether ASM is enabled">ASM</span>
+			<span id="msr-indicator" class="indicator indicator-green"
+				title="Indicates whether MSR is enabled">MSR</span>
+			<span id="huge-pages-indicator" class="indicator indicator-green"
+				title="Indicates whether huge pages are enabled">HP</span>
+			<span id="huge-pages-jit-indicator" class="indicator indicator-green"
+				title="Indicates whether huge pages JIT is enabled">HPJ</span>
+			<span id="opencl-indicator" class="indicator indicator-green"
+				title="Indicates whether OpenCL is enabled">CL</span>
+			<span id="cuda-indicator" class="indicator indicator-green"
+				title="Indicates whether CUDA is enabled">CU</span>
+			<div>
+				<span id="pause-indicator" class="indicator indicator-yellow"
+					title="Indicates whether the miner is paused">PAUSE</span>
+				<span id="error-indicator" class="indicator indicator-red"
+					title="Indicates error (either on local or remote)">ERROR</span>
+			</div>
+		</div>
+
+		<table class="response-table" border="1">
+			<caption>MINER</caption>
+			<tr>
+				<td class="identifier">Name</td>
+				<td colspan="3">
+					<div id="miner-name" class="displays">---</div>
+				</td>
+			</tr>
+			<tr>
+				<td class="identifier">CPU</td>
+				<td colspan="3">
+					<div id="miner-cpu" class="displays">---</div>
+				</td>
+			</tr>
+			<tr>
+				<td class="identifier">Software</td>
+				<td colspan="3">
+					<div id="miner-software" class="displays">---</div>
+				</td>
+			</tr>
+			<tr>
+				<td class="identifier">Uptime</td>
+				<td>
+					<div>
+						<span id="miner-uptime-days" class="displays">0000</span>d
+						<span id="miner-uptime-hours" class="displays">00</span>h
+						<span id="miner-uptime-minutes" class="displays">00</span>m
+						<span id="miner-uptime-seconds" class="displays">00</span>s
+					</div>
+				</td>
+				<td class="identifier">Hashrate</td>
+				<td>
+					<div>
+						<span id="miner-hashrate-10s" class="displays">0000000</span>
+						<span id="miner-hashrate-1m" class="displays">0000000</span>
+						<span id="miner-hashrate-15m" class="displays">0000000</span>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td class="identifier">Hashes</td>
+				<td>
+					<div id="miner-total-hashes" class="displays">
+						00000000000000000000
+					</div>
+				</td>
+				<td class="identifier">Shares</td>
+				<td>
+					<div>
+						*<span id="miner-shares-total" class="displays">000000</span>
+						A<span id="miner-shares-accepted" class="displays">000000</span>
+						R<span id="miner-shares-rejected" class="displays">000000</span>
+					</div>
+				</td>
+			</tr>
+		</table>
+		<table class="response-table" border="1">
+			<caption>POOL</caption>
+			<tr>
+				<td class="identifier">URL</td>
+				<td colspan="3">
+					<div id="pool-url" class="displays">---</div>
+				</td>
+			</tr>
+			<tr>
+				<td class="identifier">Uptime</td>
+				<td>
+					<div>
+						<span id="pool-uptime-days" class="displays">0000</span>d
+						<span id="pool-uptime-hours" class="displays">00</span>h
+						<span id="pool-uptime-minutes" class="displays">00</span>m
+						<span id="pool-uptime-seconds" class="displays">00</span>s
+					</div>
+				</td>
+				<td class="identifier">Ping</td>
+				<td>
+					<div>
+						<span id="pool-ping" class="displays">0000</span>ms
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<script>
+		// Inputs
+		const urlField = document.getElementById("apiUrl");
+		const tokenField = document.getElementById("token");
+		const refreshSlider = document.getElementById("refresh-slider");
+
+		// LED indicators
+		const indError = document.getElementById("error-indicator");
+		const indPause = document.getElementById("pause-indicator");
+		const indPoolConnection = document.getElementById("pool-connection-indicator");
+		const indHwAes = document.getElementById("hw-aes-indicator");
+		const indAsm = document.getElementById("asm-indicator");
+		const indMsr = document.getElementById("msr-indicator");
+		const indHugePages = document.getElementById("huge-pages-indicator");
+		const indHugePagesJit = document.getElementById("huge-pages-jit-indicator");
+		const indOpencl = document.getElementById("opencl-indicator");
+		const indCuda = document.getElementById("cuda-indicator");
+
+		// Displays
+		const dispMinerName = document.getElementById("miner-name");
+		const dispMinerCpu = document.getElementById("miner-cpu");
+		const dispMinerSoftware = document.getElementById("miner-software");
+		const dispMinerUptimeDays = document.getElementById("miner-uptime-days");
+		const dispMinerUptimeHours = document.getElementById("miner-uptime-hours");
+		const dispMinerUptimeMinutes = document.getElementById("miner-uptime-minutes");
+		const dispMinerUptimeSeconds = document.getElementById("miner-uptime-seconds");
+		const dispMinerHashrate10s = document.getElementById("miner-hashrate-10s");
+		const dispMinerHashrate1m = document.getElementById("miner-hashrate-1m");
+		const dispMinerHashrate15m = document.getElementById("miner-hashrate-15m");
+		const dispMinerTotalHashes = document.getElementById("miner-total-hashes");
+		const dispMinerSharesTotal = document.getElementById("miner-shares-total");
+		const dispMinerSharesAccepted = document.getElementById("miner-shares-accepted");
+		const dispMinerSharesRejected = document.getElementById("miner-shares-rejected");
+		const dispPoolUrl = document.getElementById("pool-url");
+		const dispPoolUptimeDays = document.getElementById("pool-uptime-days");
+		const dispPoolUptimeHours = document.getElementById("pool-uptime-hours");
+		const dispPoolUptimeMinutes = document.getElementById("pool-uptime-minutes");
+		const dispPoolUptimeSeconds = document.getElementById("pool-uptime-seconds");
+		const dispPoolPing = document.getElementById("pool-ping");
+
+		// Map slider values to seconds
+		const pollMap = {
+			"0": 0,
+			"1": 10,
+			"2": 5,
+			"3": 2,
+			"4": 1,
+			"5": 0.5,
+			"6": 0.25,
+			"7": 0.2
+		};
+
+		let pollIntervalSec = 0; // 0 = OFF
+		let pollIntervalId = null;
+
+		/**
+		 * Extracts uptime in seconds into an array of [days, hours, minutes, seconds].
+		 * @param {number} seconds - Uptime in seconds.
+		 * @returns {number[]} An array containing days, hours, minutes, and seconds.
+		 * @throws {Error} If the input is not a valid non-negative number.
+		 */
+		function extractUptime(seconds) {
+			if (isNaN(seconds) || seconds < 0)
+				throw new Error("Invalid uptime value: " + seconds);
+
+			var s = Math.floor(seconds);
+			var d = Math.floor(s / 86400); s -= d * 86400;
+			var h = Math.floor(s / 3600); s -= h * 3600;
+			var m = Math.floor(s / 60); s -= m * 60;
+
+			var parts = [0, 0, 0, 0];
+			if (d) parts[0] = d;
+			if (h) parts[1] = h;
+			if (m) parts[2] = m;
+			if (s) parts[3] = s;
+
+			return parts;
+		}
+
+		/**
+		 * Performs an HTTP request to the XMRig API.
+		 * @param {string} path - The API endpoint path without root (e.g., "/2/summary").
+		 * @param {string} method - The HTTP method (default: "GET").
+		 * @param {object|null} payload - The request payload for POST/PUT/PATCH requests (default: null).
+		 * @returns {Promise<object>} The JSON response from the API.
+		 * @throws {Error} If the URL is empty or if the response is not OK.
+		 */
+		async function doRequest(path, method = "GET", payload = null) {
+			if (urlField.value === "")
+				throw new Error("URL is empty");
+
+			const url = urlField.value + path;
+			const token = tokenField.value;
+			const headers = {};
+			let body = null;
+			let response = null;
+
+			if (token !== "")
+				headers["Authorization"] = "Bearer " + token;
+			if (method === "POST" || method === "PUT" || method === "PATCH") {
+				headers["Content-Type"] = "application/json";
+				body = JSON.stringify(payload);
+				response = await fetch(url, { method, headers, body });
+			}
+			else {
+				response = await fetch(url, { method, headers });
+			}
+			const data = await response.json();
+			// console.log(data);
+			if (!response.ok)
+				throw new Error(JSON.stringify(data));
+			return data;
+		}
+
+		/**
+		 * Fetches the summary information from the XMRig API.
+		 * @returns {Promise<object>} The summary information.
+		 * @throws {Error} If the request fails.
+		 */
+		async function getSummary() {
+			return doRequest("/2/summary");
+		}
+
+		/**
+		 * Fetches the backends information from the XMRig API.
+		 * @returns {Promise<object>} The backends information.
+		 * @throws {Error} If the request fails.
+		 */
+		async function getBackends() {
+			return doRequest("/2/backends");
+		}
+
+		/**
+		 * Sends an RPC command to the XMRig API.
+		 * @param {string} cmd - The RPC command to send.
+		 * @returns {Promise<object>} The response from the RPC command.
+		 * @throws {Error} If the request fails.
+		 */
+		async function sendRpc(cmd) {
+			return doRequest("/json_rpc", "POST", {
+				"id": 1,
+				"jsonrpc": "2.0",
+				"method": cmd
+			});
+		}
+
+		/**
+		 * Renders the summary and backends information to the UI.
+		 * @param {object} summary - The summary information.
+		 * @param {object[]} backends - The backends information.
+		 */
+		function render(summary, backends) {
+			let backendCpu = null;
+			let backendOpencl = null;
+			let backendCuda = null;
+			for (const backend of backends) {
+				if (backend.type === "cpu")
+					backendCpu = backend;
+				else if (backend.type === "opencl")
+					backendOpencl = backend;
+				else if (backend.type === "cuda")
+					backendCuda = backend;
+			}
+
+			indPause.className = summary.paused ? "indicator indicator-yellow-active" : "indicator indicator-yellow";
+			indPoolConnection.className = summary.connection.ip == null ? "indicator indicator-green" : "indicator indicator-green-active";
+			indHwAes.className = backendCpu["hw-aes"] ? "indicator indicator-green-active" : "indicator indicator-green";
+			indAsm.className = backendCpu.asm != undefined ? "indicator indicator-green-active" : "indicator indicator-green"; //TODO: confirm the behavior of no asm
+			indMsr.className = backendCpu.msr ? "indicator indicator-green-active" : "indicator indicator-green";
+			indHugePages.className = backendCpu.hugepages != undefined ? "indicator indicator-green-active" : "indicator indicator-green"; //TODO: confirm the behavior of no hugepages
+			indHugePagesJit.className = "indicator indicator-green"; //TODO: confirm the behavior of hugepages_jit presence
+			indOpencl.className = backendOpencl.enabled ? "indicator indicator-green-active" : "indicator indicator-green";
+			indCuda.className = backendCuda.enabled ? "indicator indicator-green-active" : "indicator indicator-green";
+
+			minerUptime = extractUptime(summary.uptime);
+			dispMinerName.textContent = summary.worker_id;
+			dispMinerCpu.textContent = summary.cpu.brand;
+			dispMinerSoftware.textContent = summary.ua;
+
+			dispMinerUptimeDays.textContent = minerUptime[0].toString().padStart(4, "0");
+			dispMinerUptimeHours.textContent = minerUptime[1].toString().padStart(2, "0");
+			dispMinerUptimeMinutes.textContent = minerUptime[2].toString().padStart(2, "0");
+			dispMinerUptimeSeconds.textContent = minerUptime[3].toString().padStart(2, "0");
+
+			dispMinerHashrate10s.textContent = Math.round(summary.hashrate.total[0]).toString().padStart(7, "0");
+			dispMinerHashrate1m.textContent = Math.round(summary.hashrate.total[1]).toString().padStart(7, "0");
+			dispMinerHashrate15m.textContent = Math.round(summary.hashrate.total[2]).toString().padStart(7, "0");
+
+			dispMinerTotalHashes.textContent = summary.results.hashes_total.toString().padStart(20, "0");
+
+			dispMinerSharesTotal.textContent = summary.results.shares_total.toString().padStart(6, "0");
+			dispMinerSharesAccepted.textContent = summary.results.shares_good.toString().padStart(6, "0");
+			dispMinerSharesRejected.textContent = (summary.results.shares_total - summary.results.shares_good).toString().padStart(6, "0");
+
+			dispPoolUrl.textContent = summary.connection.pool;
+
+			poolUptime = extractUptime(summary.connection.uptime);
+			dispPoolUptimeDays.textContent = poolUptime[0].toString().padStart(4, "0");
+			dispPoolUptimeHours.textContent = poolUptime[1].toString().padStart(2, "0");
+			dispPoolUptimeMinutes.textContent = poolUptime[2].toString().padStart(2, "0");
+			dispPoolUptimeSeconds.textContent = poolUptime[3].toString().padStart(2, "0");
+
+			dispPoolPing.textContent = summary.connection.ping.toString().padStart(4, "0");
+
+			indError.className = "indicator indicator-red";
+		}
+
+		/**
+		 * Sends a pause command to the miner and updates the UI accordingly.
+		 * If an error occurs, it logs the error and updates the error indicator.
+		 */
+		async function pause() {
+			try {
+				let response = await sendRpc("pause");
+				if (response.result.status === "OK") {
+					console.log("Miner paused");
+					indPause.className = "indicator indicator-yellow-active";
+				}
+				else {
+					throw new Error("Unexpected response: " + JSON.stringify(response));
+				}
+			}
+			catch (e) {
+				console.error(e);
+				indError.className = "indicator indicator-red-active";
+			}
+		}
+
+		/**
+		 * Sends a resume command to the miner and updates the UI accordingly.
+		 * If an error occurs, it logs the error and updates the error indicator.
+		 */
+		async function resume() {
+			try {
+				let response = await sendRpc("resume");
+				if (response.result.status === "OK") {
+					console.log("Miner resumed");
+					indPause.className = "indicator indicator-yellow";
+				}
+				else {
+					throw new Error("Unexpected response: " + JSON.stringify(response));
+				}
+			}
+			catch (e) {
+				console.error(e);
+				indError.className = "indicator indicator-red-active";
+			}
+		}
+
+		/**
+		 * Sends a stop command to the miner and resets the UI.
+		 * If an error occurs, it logs the error and updates the error indicator.
+		 */
+		async function stop() {
+			//TODO: Will the miner cut the network connection before the response arrives and cause a false error?
+			try {
+				let response = await sendRpc("stop");
+				if (response.result.status === "OK") {
+					console.log("Miner stopped");
+					reset();
+				}
+				else {
+					throw new Error("Unexpected response: " + JSON.stringify(response));
+				}
+			}
+			catch (e) {
+				console.error(e);
+				indError.className = "indicator indicator-red-active";
+			}
+		}
+
+		/**
+		 * Fetches the summary and backends information and renders it to the UI.
+		 * If an error occurs, it logs the error and updates the error indicator.
+		 */
+		async function tick() {
+			try {
+				const summary = await getSummary();
+				const backends = await getBackends();
+				render(summary, backends);
+			}
+			catch (err) {
+				console.error(err);
+				indError.className = "indicator indicator-red-active";
+			}
+		}
+
+		/**
+		 * Resets the UI to its initial state.
+		 * Clears all inputs, resets indicators, and sets displays to default values.
+		 */
+		function reset() {
+			// Cancel polling if present
+			if (pollIntervalId) {
+				clearInterval(pollIntervalId);
+				pollIntervalId = null;
+			}
+
+			// Clear inputs
+			urlField.value = "";
+			tokenField.value = "";
+			// Enable inputs
+			urlField.disabled = false;
+			tokenField.disabled = false;
+			// Put the slider to OFF
+			refreshSlider.value = "0";
+			pollIntervalSec = 0;
+			console.log("Reset");
+
+			// Reset indicators
+			indError.className = "indicator indicator-red";
+			indPause.className = "indicator indicator-yellow";
+			indPoolConnection.className = "indicator indicator-green";
+			indHwAes.className = "indicator indicator-green";
+			indAsm.className = "indicator indicator-green";
+			indMsr.className = "indicator indicator-green";
+			indHugePages.className = "indicator indicator-green";
+			indHugePagesJit.className = "indicator indicator-green";
+			indOpencl.className = "indicator indicator-green";
+			indCuda.className = "indicator indicator-green";
+
+			// Reset displays
+			dispMinerName.textContent = "---";
+			dispMinerCpu.textContent = "---";
+			dispMinerSoftware.textContent = "---";
+			dispMinerUptimeDays.textContent = "0000";
+			dispMinerUptimeHours.textContent = "00";
+			dispMinerUptimeMinutes.textContent = "00";
+			dispMinerUptimeSeconds.textContent = "00";
+			dispMinerHashrate10s.textContent = "0000000";
+			dispMinerHashrate1m.textContent = "0000000";
+			dispMinerHashrate15m.textContent = "0000000";
+			dispMinerTotalHashes.textContent = "00000000000000000000";
+			dispMinerSharesTotal.textContent = "000000";
+			dispMinerSharesAccepted.textContent = "000000";
+			dispMinerSharesRejected.textContent = "000000";
+
+			dispPoolUrl.textContent = "---";
+			dispPoolUptimeDays.textContent = "0000";
+			dispPoolUptimeHours.textContent = "00";
+			dispPoolUptimeMinutes.textContent = "00";
+			dispPoolUptimeSeconds.textContent = "00";
+			dispPoolPing.textContent = "0000";
+		}
+
+		/**
+		 * Initializes the application.
+		 * Resets the UI and sets up event listeners.
+		 */
+		function main() {
+			console.log("Initializing");
+			reset();
+			refreshSlider.addEventListener("input", () => {
+				// console.log(refreshSlider.value);
+				let oldPollIntervalSec = pollIntervalSec;
+				pollIntervalSec = pollMap[refreshSlider.value];
+
+				// Cancel polling if present
+				if (pollIntervalId) {
+					clearInterval(pollIntervalId);
+					pollIntervalId = null;
+				}
+
+				if (pollIntervalSec > 0) {
+					// Disable inputs while polling
+					urlField.disabled = true;
+					tokenField.disabled = true;
+					// Set up polling
+					pollIntervalId = setInterval(tick, pollIntervalSec * 1000);
+					// Don't let the user wait too long for the first refresh
+					if (pollIntervalSec > 1 && oldPollIntervalSec === 0) {
+						// Refresh once immediately
+						tick();
+					}
+					console.log("Auto refresh: " + pollIntervalSec + "s");
+				}
+				else {
+					// Enable inputs
+					urlField.disabled = false;
+					tokenField.disabled = false;
+					// Not setting up polling
+					console.log("Auto refresh: OFF");
+				}
+			});
+			console.log("Application initialized");
+		}
+
+		document.addEventListener("DOMContentLoaded", main);
+	</script>
+</body>
+
+</html>

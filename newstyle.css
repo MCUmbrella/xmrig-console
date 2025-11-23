@@ -1,0 +1,160 @@
+* {
+	font-size: 16px;
+	font-family: monospace;
+	box-sizing: border-box;
+}
+
+#app {
+	width: 100%;
+}
+
+#auth-container {
+	width: 100%;
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: 6px 8px;
+	align-items: center;
+}
+
+#auth-container label {
+	font-weight: bold;
+	text-align: right;
+}
+
+#auth-container input[type="url"],
+#auth-container input[type="password"] {
+	width: 100%;
+}
+
+#refresh-slider-container {
+	width: 100%;
+}
+
+#refresh-slider {
+	width: 100%;
+}
+
+#refresh-slider-tickmarks {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	writing-mode: vertical-lr;
+	width: 100%;
+	overflow: visible;
+}
+
+#refresh-slider-tickmarks * {
+	text-align: center;
+	rotate: -90deg;
+	transform: translate(10px, 0px);
+}
+
+#controls-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	justify-content: center;
+	align-items: center;
+	margin-top: -10px;
+	margin-bottom: 6px;
+}
+
+#indicators-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.indicator {
+	background: black;
+	font-weight: bold;
+	text-align: center;
+	padding-left: 4px;
+	padding-right: 4px;
+}
+
+@keyframes yellow-blink {
+	0% {
+		background-color: saddlebrown;
+		color: yellow;
+	}
+
+	50% {
+		background-color: black;
+		color: saddlebrown;
+	}
+}
+
+@keyframes red-blink {
+	0% {
+		background-color: maroon;
+		color: red;
+	}
+
+	50% {
+		background-color: black;
+		color: maroon;
+	}
+}
+
+.indicator-green {
+	color: darkolivegreen
+}
+
+.indicator-green-active {
+	background: darkolivegreen;
+	color: lime;
+}
+
+.indicator-yellow {
+	color: saddlebrown;
+}
+
+.indicator-yellow-active {
+	background: saddlebrown;
+	color: yellow;
+	animation: yellow-blink 1s infinite;
+}
+
+.indicator-red {
+	color: maroon;
+}
+
+.indicator-red-active {
+	background: maroon;
+	color: red;
+	animation: red-blink 0.25s infinite;
+}
+
+.response-table {
+	width: 100%;
+	table-layout: auto;
+	border-collapse: collapse;
+	border: solid 1px black;
+	margin-top: 4px;
+}
+
+.response-table caption {
+	text-align: left;
+	font-weight: bold;
+}
+
+.response-table td {
+	vertical-align: top;
+	width: fit-content;
+}
+
+.response-table td.identifier {
+	background-color: lightgray;
+	font-weight: bold;
+	width: 1px;
+	word-break: keep-all;
+}
+
+.response-table td:not(.identifier) * {
+	word-break: break-word;
+}
+
+.displays {
+	background-color: whitesmoke;
+}
