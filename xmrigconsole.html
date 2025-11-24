@@ -517,9 +517,9 @@
 			indPause.className = summary.paused ? "indicator indicator-yellow-active" : "indicator indicator-yellow";
 			indPoolConnection.className = summary.connection.ip == null ? "indicator indicator-green" : "indicator indicator-green-active";
 			indHwAes.className = backendCpu["hw-aes"] ? "indicator indicator-green-active" : "indicator indicator-green";
-			indAsm.className = backendCpu.asm != undefined ? "indicator indicator-green-active" : "indicator indicator-green"; //TODO: confirm the behavior of no asm
+			indAsm.className = backendCpu.asm ? "indicator indicator-green-active" : "indicator indicator-green";
 			indMsr.className = backendCpu.msr ? "indicator indicator-green-active" : "indicator indicator-green";
-			indHugePages.className = backendCpu.hugepages != undefined ? "indicator indicator-green-active" : "indicator indicator-green"; //TODO: confirm the behavior of no hugepages
+			indHugePages.className = backendCpu.hugepages[0] == backendCpu.hugepages[1] ? "indicator indicator-green-active" : "indicator indicator-green";
 			indHugePagesJit.className = "indicator indicator-green"; //TODO: confirm the behavior of hugepages_jit presence
 			indOpencl.className = backendOpencl.enabled ? "indicator indicator-green-active" : "indicator indicator-green";
 			indCuda.className = backendCuda.enabled ? "indicator indicator-green-active" : "indicator indicator-green";
