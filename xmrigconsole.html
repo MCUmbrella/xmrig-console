@@ -236,11 +236,11 @@
 		</div>
 
 		<div id="controls-container">
-			<button onclick="pause()" title="Pause the miner">Pause</button>
-			<button onclick="resume()" title="Resume the miner">Resume</button>
-			<button onclick="stop()" title="Stop the miner">Stop</button>
-			<button onclick="tick()" title="Refresh once">Tick</button>
-			<button onclick="reset()" title="Reset control panel">Reset</button>
+			<button id="pause-button" onclick="pause()" title="Pause the miner">Pause</button>
+			<button id="resume-button" onclick="resume()" title="Resume the miner">Resume</button>
+			<button id="stop-button" onclick="stop()" title="Stop the miner">Stop</button>
+			<button id="tick-button" onclick="tick()" title="Refresh once">Tick</button>
+			<button id="reset-button" onclick="reset()" title="Reset control panel">Reset</button>
 		</div>
 		<div id="indicators-container">
 			<span id="pool-connection-indicator" class="indicator indicator-green"
@@ -354,6 +354,13 @@
 		const urlField = document.getElementById("apiUrl");
 		const tokenField = document.getElementById("token");
 		const refreshSlider = document.getElementById("refresh-slider");
+
+		// Buttons
+		const btnPause = document.getElementById("pause-button");
+		const btnResume = document.getElementById("resume-button");
+		const btnStop = document.getElementById("stop-button");
+		const btnTick = document.getElementById("tick-button");
+		const btnReset = document.getElementById("reset-button");
 
 		// LED indicators
 		const indError = document.getElementById("error-indicator");
@@ -514,6 +521,19 @@
 					backendCuda = backend;
 			}
 
+			// Disable pause, resume and stop if the API is in restricted mode
+			if (summary.restricted) {
+				btnPause.disabled = true;
+				btnResume.disabled = true;
+				btnStop.disabled = true;
+			}
+			else {
+				btnPause.disabled = false;
+				btnResume.disabled = false;
+				btnStop.disabled = false;
+			}
+
+			// Update indicators
 			indPause.className = summary.paused ? "indicator indicator-yellow-active" : "indicator indicator-yellow";
 			indPoolConnection.className = summary.connection.ip == null ? "indicator indicator-green" : "indicator indicator-green-active";
 			indHwAes.className = backendCpu["hw-aes"] ? "indicator indicator-green-active" : "indicator indicator-green";
@@ -524,11 +544,12 @@
 			indOpencl.className = backendOpencl.enabled ? "indicator indicator-green-active" : "indicator indicator-green";
 			indCuda.className = backendCuda.enabled ? "indicator indicator-green-active" : "indicator indicator-green";
 
-			minerUptime = extractUptime(summary.uptime);
+			// Update miner information
 			dispMinerName.textContent = summary.worker_id;
 			dispMinerCpu.textContent = summary.cpu.brand;
 			dispMinerSoftware.textContent = summary.ua;
 
+			minerUptime = extractUptime(summary.uptime);
 			dispMinerUptimeDays.textContent = minerUptime[0].toString().padStart(4, "0");
 			dispMinerUptimeHours.textContent = minerUptime[1].toString().padStart(2, "0");
 			dispMinerUptimeMinutes.textContent = minerUptime[2].toString().padStart(2, "0");
@@ -544,6 +565,7 @@
 			dispMinerSharesAccepted.textContent = summary.results.shares_good.toString().padStart(6, "0");
 			dispMinerSharesRejected.textContent = (summary.results.shares_total - summary.results.shares_good).toString().padStart(6, "0");
 
+			// Update pool information
 			dispPoolUrl.textContent = summary.connection.pool;
 
 			poolUptime = extractUptime(summary.connection.uptime);
