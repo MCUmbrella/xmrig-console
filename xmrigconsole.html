@@ -25,6 +25,7 @@
 			max-width: 640px;
 			min-height: 480px;
 			box-shadow: inset 0 0 1px 1px black;
+			transform-origin: top center;
 		}
 
 		#auth-container {
@@ -350,6 +351,15 @@
 	</div>
 
 	<script>
+		const app = document.getElementById("app");
+
+		// URL parameters
+		const params = new URLSearchParams(window.location.search);
+		const paramNoZoom = params.has("nozoom");
+		const paramUrl = params.get("url") || "";
+		const paramToken = params.get("token") || "";
+		const paramRefresh = params.get("refresh") || "";
+
 		// Inputs
 		const urlField = document.getElementById("apiUrl");
 		const tokenField = document.getElementById("token");
@@ -731,12 +741,40 @@
 		}
 
 		/**
+		 * Adjusts the scale of the application to fit within the window.
+		 */
+		function zoom() {
+			if (paramNoZoom) {
+				return;
+			}
+
+			const ww = window.innerWidth;
+			const wh = window.innerHeight;
+			const aw = app.offsetWidth;
+			const ah = app.offsetHeight;
+			if (ww <= aw || wh <= ah) {
+				app.style.transform = "scale(1)";
+				return;
+			}
+			const scaleW = ww / aw;
+			const scaleH = wh / ah;
+			const scale = Math.min(scaleW, scaleH);
+			app.style.transform = "scale(" + scale.toString() + ")";
+		}
+
+		/**
 		 * Initializes the application.
 		 * Resets the UI and sets up event listeners.
 		 */
 		function main() {
 			console.log("Initializing");
 			reset();
+
+			// Register zooming
+			zoom();
+			window.addEventListener("resize", zoom);
+
+			// Register refresh slider
 			refreshSlider.addEventListener("input", () => {
 				// console.log(refreshSlider.value);
 				let oldPollIntervalSec = pollIntervalSec;
@@ -769,6 +807,17 @@
 					console.log("Auto refresh: OFF");
 				}
 			});
+
+			// Apply URL parameters if present
+			if (paramUrl !== "") {
+				urlField.value = paramUrl;
+			}
+			tokenField.value = paramToken;
+			if (paramRefresh !== "" && !isNaN(paramRefresh) && paramRefresh >= 0 && paramRefresh <= 7) {
+				refreshSlider.value = paramRefresh;
+				refreshSlider.dispatchEvent(new Event("input"));
+			}
+
 			console.log("Application initialized");
 		}
 
