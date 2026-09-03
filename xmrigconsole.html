@@ -13,7 +13,7 @@
 		}
 
 		* {
-			font-family: "CustomFont", "Noto Sans Mono", "DejaVu Sans Mono", "Ubuntu Sans Mono", "Noto Mono", "Ubuntu Mono", "FreeMono", "Courier New", monospace;
+			font-family: "CustomFont", "Noto Sans Mono", "Noto Mono", "WenQuanYi Micro Hei Mono", "DejaVu Sans Mono", "Ubuntu Sans Mono", "Ubuntu Mono", "FreeMono", "Courier New", monospace;
 			font-size: 16px;
 			box-sizing: border-box;
 		}
@@ -231,9 +231,16 @@
 		}
 
 		.response-table td {
-			padding-top: 4px;
-			padding-bottom: 4px;
+			padding: 4px;
 			width: fit-content;
+		}
+
+		.response-table td div * {
+			margin-right: 1px;
+		}
+
+		.response-table td div *:last-child {
+			margin-right: 0px;
 		}
 
 		.response-table td.identifier {
@@ -243,17 +250,26 @@
 		}
 
 		.response-table td:not(.identifier) * {
-			word-break: break-word;
+			overflow: hidden;
+			text-overflow: ellipsis;
 		}
 
 		.response-table .displays {
 			line-height: 1.5;
 			background-color: black;
 			color: white;
-			margin-left: 2px;
-			margin-right: 2px;
+		}
+
+		.response-table span.displays {
 			padding-left: 2px;
 			padding-right: 2px;
+		}
+
+		.response-table input.displays {
+			width: 100%;
+			border: none;
+			outline: none;
+			caret-color: transparent;
 		}
 	</style>
 </head>
@@ -316,29 +332,29 @@
 			<tr>
 				<td class="identifier">Name</td>
 				<td colspan="3">
-					<div id="miner-name" class="displays">---</div>
+					<input id="miner-name" class="displays" type="text" readonly />
 				</td>
 			</tr>
 			<tr>
 				<td class="identifier">CPU</td>
 				<td colspan="3">
-					<div id="miner-cpu" class="displays">---</div>
+					<input id="miner-cpu" class="displays" type="text" readonly />
 				</td>
 			</tr>
 			<tr>
 				<td class="identifier">Software</td>
 				<td colspan="3">
-					<div id="miner-software" class="displays">---</div>
+					<input id="miner-software" class="displays" type="text" readonly />
 				</td>
 			</tr>
 			<tr>
 				<td class="identifier">Uptime</td>
 				<td>
 					<div>
-						<span id="miner-uptime-days" class="displays">0000</span>d
-						<span id="miner-uptime-hours" class="displays">00</span>h
-						<span id="miner-uptime-minutes" class="displays">00</span>m
-						<span id="miner-uptime-seconds" class="displays">00</span>s
+						<span id="miner-uptime-days" class="displays">0000</span><span>d</span>
+						<span id="miner-uptime-hours" class="displays">00</span><span>h</span>
+						<span id="miner-uptime-minutes" class="displays">00</span><span>m</span>
+						<span id="miner-uptime-seconds" class="displays">00</span><span>s</span>
 					</div>
 				</td>
 				<td class="identifier">Hashrate</td>
@@ -353,16 +369,16 @@
 			<tr>
 				<td class="identifier">Hashes</td>
 				<td>
-					<div id="miner-total-hashes" class="displays">
-						00000000000000000000
+					<div>
+						<span id="miner-total-hashes" class="displays">0000000000000000000</span>
 					</div>
 				</td>
 				<td class="identifier">Shares</td>
 				<td>
 					<div>
-						*<span id="miner-shares-total" class="displays">000000</span>
-						A<span id="miner-shares-accepted" class="displays">000000</span>
-						R<span id="miner-shares-rejected" class="displays">000000</span>
+						<span>*</span><span id="miner-shares-total" class="displays">000000</span>
+						<span>A</span><span id="miner-shares-accepted" class="displays">000000</span>
+						<span>R</span><span id="miner-shares-rejected" class="displays">000000</span>
 					</div>
 				</td>
 			</tr>
@@ -372,23 +388,23 @@
 			<tr>
 				<td class="identifier">URL</td>
 				<td colspan="3">
-					<div id="pool-url" class="displays">---</div>
+					<input id="pool-url" class="displays" type="text" readonly />
 				</td>
 			</tr>
 			<tr>
 				<td class="identifier">Uptime</td>
 				<td>
 					<div>
-						<span id="pool-uptime-days" class="displays">0000</span>d
-						<span id="pool-uptime-hours" class="displays">00</span>h
-						<span id="pool-uptime-minutes" class="displays">00</span>m
-						<span id="pool-uptime-seconds" class="displays">00</span>s
+						<span id="pool-uptime-days" class="displays">0000</span><span>d</span>
+						<span id="pool-uptime-hours" class="displays">00</span><span>h</span>
+						<span id="pool-uptime-minutes" class="displays">00</span><span>m</span>
+						<span id="pool-uptime-seconds" class="displays">00</span><span>s</span>
 					</div>
 				</td>
 				<td class="identifier">Ping</td>
 				<td>
 					<div>
-						<span id="pool-ping" class="displays">0000</span>ms
+						<span id="pool-ping" class="displays">0000</span><span>ms</span>
 					</div>
 				</td>
 			</tr>
@@ -600,9 +616,9 @@
 			indCuda.className = backendCuda.enabled ? "indicator indicator-green-active" : "indicator indicator-green";
 
 			// Update miner information
-			dispMinerName.textContent = summary.worker_id;
-			dispMinerCpu.textContent = summary.cpu.brand;
-			dispMinerSoftware.textContent = summary.ua;
+			dispMinerName.value = summary.worker_id;
+			dispMinerCpu.value = summary.cpu.brand;
+			dispMinerSoftware.value = summary.ua;
 
 			minerUptime = extractUptime(summary.uptime);
 			dispMinerUptimeDays.textContent = minerUptime[0].toString().padStart(4, "0");
@@ -621,7 +637,7 @@
 			dispMinerSharesRejected.textContent = (summary.results.shares_total - summary.results.shares_good).toString().padStart(6, "0");
 
 			// Update pool information
-			dispPoolUrl.textContent = summary.connection.pool;
+			dispPoolUrl.value = summary.connection.pool;
 
 			poolUptime = extractUptime(summary.connection.uptime);
 			dispPoolUptimeDays.textContent = poolUptime[0].toString().padStart(4, "0");
@@ -777,9 +793,9 @@
 			indCuda.className = "indicator indicator-green";
 
 			// Reset displays
-			dispMinerName.textContent = "---";
-			dispMinerCpu.textContent = "---";
-			dispMinerSoftware.textContent = "---";
+			dispMinerName.value = "---";
+			dispMinerCpu.value = "---";
+			dispMinerSoftware.value = "---";
 			dispMinerUptimeDays.textContent = "0000";
 			dispMinerUptimeHours.textContent = "00";
 			dispMinerUptimeMinutes.textContent = "00";
@@ -787,12 +803,12 @@
 			dispMinerHashrate10s.textContent = "0000000";
 			dispMinerHashrate1m.textContent = "0000000";
 			dispMinerHashrate15m.textContent = "0000000";
-			dispMinerTotalHashes.textContent = "00000000000000000000";
+			dispMinerTotalHashes.textContent = "0000000000000000000";
 			dispMinerSharesTotal.textContent = "000000";
 			dispMinerSharesAccepted.textContent = "000000";
 			dispMinerSharesRejected.textContent = "000000";
 
-			dispPoolUrl.textContent = "---";
+			dispPoolUrl.value = "---";
 			dispPoolUptimeDays.textContent = "0000";
 			dispPoolUptimeHours.textContent = "00";
 			dispPoolUptimeMinutes.textContent = "00";
