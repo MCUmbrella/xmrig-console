@@ -6,9 +6,15 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>XMRig Control Panel</title>
 	<style>
+		@font-face {
+			font-family: "CustomFont";
+			src: url("custom.ttf") format("truetype");
+			font-display: swap;
+		}
+
 		* {
+			font-family: "CustomFont", "Noto Sans Mono", "DejaVu Sans Mono", "Ubuntu Sans Mono", "Noto Mono", "Ubuntu Mono", "FreeMono", "Courier New", monospace;
 			font-size: 16px;
-			font-family: monospace;
 			box-sizing: border-box;
 		}
 
@@ -48,26 +54,42 @@
 		}
 
 		#refresh-slider-container {
-			width: 100%;
+			width: 90%;
+			margin-top: 8px;
+			margin-bottom: 12px;
+			margin-left: auto;
+			margin-right: auto;
 		}
 
 		#refresh-slider {
+			-webkit-appearance: none;
 			width: 100%;
+			height: 6px;
+			background-color: darkgray;
+			box-shadow: inset 0 0 0px 2px gray;
+			margin-bottom: 8px;
+		}
+
+		#refresh-slider::-moz-range-thumb,
+		#refresh-slider::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			width: 24px;
+			height: 16px;
+			background-color: #c0c7c8;
+			border: outset 2px white;
+			outline: outset 2px darkgray;
 		}
 
 		#refresh-slider-tickmarks {
+			width: 110%;
+			margin-left: -4.5%;
 			display: flex;
-			flex-direction: column;
 			justify-content: space-between;
-			writing-mode: vertical-lr;
-			width: 100%;
-			overflow: visible;
 		}
 
 		#refresh-slider-tickmarks * {
+			flex: 1;
 			text-align: center;
-			rotate: -90deg;
-			transform: translate(6px, 0px);
 		}
 
 		#controls-container {
@@ -82,17 +104,30 @@
 
 		#controls-container button {
 			background-color: #c0c7c8;
-			color: black;
-			border: outset 2px white;
-			outline: outset 2px darkgray;
-			padding-left: 2px;
-			padding-right: 2px;
+			color: #000000;
+			border: 2px solid;
+			border-color: #ffffff #000000 #000000 #ffffff;
+			box-shadow:
+				inset 2px 2px 0 #c0c7c8,
+				inset -2px -2px 0 #87888f;
+			border-radius: 0;
+			padding: 4px 6px;
+			outline: none;
+			font: inherit;
+			cursor: default;
 		}
 
 		#controls-container button:active {
-			outline-style: inset;
-			border-style: inset;
-			transform: translate(2px, 2px);
+			border-color: #000000;
+			box-shadow:
+				inset 2px 2px 0 #87888f,
+				inset -2px -2px 0 #87888f;
+		}
+
+		#controls-container button:focus,
+		#controls-container button:active {
+			outline: 1px dotted #000000;
+			outline-offset: -6px;
 		}
 
 		#controls-container button:disabled {
@@ -223,17 +258,17 @@
 		</div>
 
 		<div id="refresh-slider-container">
-			<input type="range" id="refresh-slider" min="0" max="7" step="1" value="0" list="refresh-slider-tickmarks">
-			<datalist id="refresh-slider-tickmarks">
-				<option value="0" label="OFF"></option>
-				<option value="1" label="10"></option>
-				<option value="2" label="5"></option>
-				<option value="3" label="2"></option>
-				<option value="4" label="1"></option>
-				<option value="5" label="0.5"></option>
-				<option value="6" label="0.25"></option>
-				<option value="7" label="0.2"></option>
-			</datalist>
+			<input type="range" id="refresh-slider" min="0" max="7" step="1" value="0">
+			<div id="refresh-slider-tickmarks">
+				<span>OFF</span>
+				<span>10</span>
+				<span>5</span>
+				<span>2</span>
+				<span>1</span>
+				<span>0.5</span>
+				<span>0.25</span>
+				<span>0.2</span>
+			</div>
 		</div>
 
 		<div id="controls-container">
