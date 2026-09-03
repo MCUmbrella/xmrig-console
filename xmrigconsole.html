@@ -298,7 +298,7 @@
 			<span id="pause-indicator" class="indicator indicator-yellow"
 				title="Indicates whether the miner is paused">PAUSE</span>
 			<span id="error-indicator" class="indicator indicator-red"
-				title="Indicates error (either on local or remote)">ERROR</span>
+				title="Indicates error (either on local or remote)" onclick="suspendErrorIndicator()">ERROR</span>
 		</div>
 
 		<table class="response-table" border="1">
@@ -620,8 +620,6 @@
 			dispPoolUptimeSeconds.textContent = poolUptime[3].toString().padStart(2, "0");
 
 			dispPoolPing.textContent = summary.connection.ping.toString().padStart(4, "0");
-
-			indError.className = "indicator indicator-red";
 		}
 
 		/**
@@ -641,7 +639,7 @@
 			}
 			catch (e) {
 				console.error(e);
-				indError.className = "indicator indicator-red-active";
+				setErrorIndicator(e);
 			}
 		}
 
@@ -662,7 +660,7 @@
 			}
 			catch (e) {
 				console.error(e);
-				indError.className = "indicator indicator-red-active";
+				setErrorIndicator(e);
 			}
 		}
 
@@ -684,7 +682,7 @@
 			}
 			catch (e) {
 				console.error(e);
-				indError.className = "indicator indicator-red-active";
+				setErrorIndicator(e);
 			}
 		}
 
@@ -708,11 +706,28 @@
 			}
 			catch (err) {
 				console.error(err);
-				indError.className = "indicator indicator-red-active";
+				setErrorIndicator(err);
 			}
 			finally {
 				tickOngoing = false;
 			}
+		}
+
+		/**
+		 * Lights up the error indicator and sets the error message.
+		 * @param {Error} e - The error object
+		 */
+		function setErrorIndicator(e) {
+			indError.className = "indicator indicator-red-active";
+			indError.title = `Last error on ${new Date().toLocaleString()}:\n${e.message}\nClick to suspend (it will be lighted again when another error occurs)`;
+		}
+
+		/**
+		 * Temporarily turns off the error indicator (one time only).
+		 * Note: This does not clear the error message.
+		 */
+		function suspendErrorIndicator() {
+			indError.className = "indicator indicator-red";
 		}
 
 		/**
