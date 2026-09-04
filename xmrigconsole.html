@@ -474,7 +474,9 @@
 			"6": 0.25,
 			"7": 0.2
 		};
-
+		let styles = null;
+		let flexRule = null;
+		let compat = false;
 		let pollIntervalSec = 0; // 0 = OFF
 		let pollIntervalId = null;
 		let tickOngoing = false;
@@ -501,6 +503,57 @@
 			if (s) parts[3] = s;
 
 			return parts;
+		}
+
+		/**
+		 * Formats a number into compact representation with SI suffixes.
+		 * @param {number} n - The number to format.
+		 * @returns {string} The formatted number in string.
+		 */
+		function compatNumber(n) {
+			if (typeof n !== "number" || !isFinite(n)) return String(n);
+			if (n === 0) return "0";
+
+			const sign = n < 0 ? "-" : "";
+			n = Math.abs(n);
+
+			const suffixes = ["", "K", "M", "G", "T", "P", "E", "Z", "Y"];
+			let tier = 0;
+			let scaled = n;
+
+			while (scaled >= 1000 && tier < suffixes.length - 1) {
+				scaled /= 1000;
+				tier++;
+			}
+
+			const suffix = suffixes[tier];
+			const maxLen = 8 - suffix.length - (sign ? 1 : 0); // room left for the numeric part
+
+			// Integer part
+			const intPart = Math.floor(scaled);
+			const intStr = String(intPart);
+			const intDigits = intStr.length;
+
+			// How many decimal places we can still fit
+			let decimals = maxLen - intDigits - 1; // -1 for the "."
+			if (decimals < 0) decimals = 0;
+
+			let numStr;
+			if (decimals === 0) {
+				numStr = intStr;
+			} else {
+				// Truncate (not round) to the allowed decimal places
+				const factor = Math.pow(10, decimals);
+				const truncated = Math.floor(scaled * factor) / factor;
+				numStr = truncated.toString();
+				// Guard against floating-point producing a longer string
+				if (numStr.length > maxLen) {
+					numStr = truncated.toFixed(decimals).replace(/\.?0+$/, ""); // trim trailing zeros
+					if (numStr.length > maxLen) numStr = numStr.slice(0, maxLen);
+				}
+			}
+
+			return sign + numStr + suffix;
 		}
 
 		/**
@@ -626,7 +679,7 @@
 			dispMinerHashrate1m.textContent = Math.round(summary.hashrate.total[1]).toString().padStart(7, "0");
 			dispMinerHashrate15m.textContent = Math.round(summary.hashrate.total[2]).toString().padStart(7, "0");
 
-			dispMinerTotalHashes.textContent = summary.results.hashes_total.toString().padStart(19, "0");
+			dispMinerTotalHashes.textContent = compat ? compatNumber(summary.results.hashes_total) : summary.results.hashes_total.toString().padStart(19, "0");
 
 			dispMinerSharesTotal.textContent = summary.results.shares_total.toString().padStart(6, "0");
 			dispMinerSharesAccepted.textContent = summary.results.shares_good.toString().padStart(6, "0");
@@ -799,7 +852,7 @@
 			dispMinerHashrate10s.textContent = "0000000";
 			dispMinerHashrate1m.textContent = "0000000";
 			dispMinerHashrate15m.textContent = "0000000";
-			dispMinerTotalHashes.textContent = "0000000000000000000";
+			dispMinerTotalHashes.textContent = compat ? "0" : "0000000000000000000";
 			dispMinerSharesTotal.textContent = "000000";
 			dispMinerSharesAccepted.textContent = "000000";
 			dispMinerSharesRejected.textContent = "000000";
@@ -817,6 +870,7 @@
 		 */
 		function zoom() {
 			if (paramNoZoom) {
+				app.style.width = "640px";
 				return;
 			}
 
@@ -824,13 +878,19 @@
 			const wh = window.innerHeight;
 			const aw = app.offsetWidth;
 			const ah = app.offsetHeight;
-			if (ww <= aw || wh <= ah) {
+			if (ww < 640) {
+				compat = true;
+				flexRule.flexDirection = "column";
 				app.style.transform = "scale(1)";
+				if (dispMinerTotalHashes.textContent.length > 8)
+					dispMinerTotalHashes.textContent = compatNumber(parseInt(dispMinerTotalHashes.textContent));
 				return;
 			}
+			compat = false;
+			flexRule.flexDirection = "row";
 			const scaleW = ww / aw;
 			const scaleH = wh / ah;
-			const scale = Math.min(scaleW, scaleH);
+			const scale = Math.max(1, Math.min(scaleW, scaleH));
 			app.style.transform = "scale(" + scale.toString() + ")";
 		}
 
@@ -841,6 +901,14 @@
 		function main() {
 			console.log("Initializing");
 			reset();
+
+			styles = document.styleSheets[0];
+			for (const rule of styles.cssRules) {
+				if (rule.selectorText === ".flex-justify") {
+					flexRule = rule.style;
+					break;
+				}
+			}
 
 			// Register zooming
 			zoom();
