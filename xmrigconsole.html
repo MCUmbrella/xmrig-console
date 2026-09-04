@@ -271,6 +271,12 @@
 			outline: none;
 			caret-color: transparent;
 		}
+
+		.flex-justify {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+		}
 	</style>
 </head>
 
@@ -340,35 +346,35 @@
 			<tr>
 				<td class="identifier">Uptime</td>
 				<td>
-					<div>
-						<span id="miner-uptime-days" class="displays">0000</span><span>d</span>
-						<span id="miner-uptime-hours" class="displays">00</span><span>h</span>
-						<span id="miner-uptime-minutes" class="displays">00</span><span>m</span>
-						<span id="miner-uptime-seconds" class="displays">00</span><span>s</span>
+					<div class="flex-justify">
+						<div><span id="miner-uptime-days" class="displays">0000</span><span>d</span></div>
+						<div><span id="miner-uptime-hours" class="displays">00</span><span>h</span></div>
+						<div><span id="miner-uptime-minutes" class="displays">00</span><span>m</span></div>
+						<div><span id="miner-uptime-seconds" class="displays">00</span><span>s</span></div>
 					</div>
 				</td>
 				<td class="identifier">Hashrate</td>
 				<td>
-					<div>
-						<span id="miner-hashrate-10s" title="Average hashrate in last 10 seconds" class="displays">0000000</span>
-						<span id="miner-hashrate-1m" title="Average hashrate in last 1 minute" class="displays">0000000</span>
-						<span id="miner-hashrate-15m" title="Average hashrate in last 15 minutes" class="displays">0000000</span>
+					<div class="flex-justify">
+						<div><span id="miner-hashrate-10s" title="Average hashrate in last 10 seconds" class="displays">0000000</span></div>
+						<div><span id="miner-hashrate-1m" title="Average hashrate in last 1 minute" class="displays">0000000</span></div>
+						<div><span id="miner-hashrate-15m" title="Average hashrate in last 15 minutes" class="displays">0000000</span></div>
 					</div>
 				</td>
 			</tr>
 			<tr>
 				<td class="identifier">Hashes</td>
 				<td>
-					<div>
+					<div class="flex-justify">
 						<span id="miner-total-hashes" class="displays">0000000000000000000</span>
 					</div>
 				</td>
 				<td class="identifier">Shares</td>
 				<td>
-					<div>
-						<span>*</span><span id="miner-shares-total" title="Total shares" class="displays">000000</span>
-						<span>A</span><span id="miner-shares-accepted" title="Accepted shares" class="displays">000000</span>
-						<span>R</span><span id="miner-shares-rejected" title="Rejected shares" class="displays">000000</span>
+					<div class="flex-justify">
+						<div><span>*</span><span id="miner-shares-total" title="Total shares" class="displays">000000</span></div>
+						<div><span>A</span><span id="miner-shares-accepted" title="Accepted shares" class="displays">000000</span></div>
+						<div><span>R</span><span id="miner-shares-rejected" title="Rejected shares" class="displays">000000</span></div>
 					</div>
 				</td>
 			</tr>
